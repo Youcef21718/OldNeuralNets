@@ -1,0 +1,112 @@
+import numpy as np
+import math
+
+lamb = 0.36
+
+Y = np.random.rand(2,4)
+
+A1 = np.random.rand(2,5)
+W1 = np.random.rand(5,3)
+B1 = np.random.rand(2,3)
+
+M1 = np.dot(A1,W1)+B1
+
+A = (np.e**M1)/(1 +  np.e**M1)
+W = np.random.rand(3,4)
+B = np.random.rand(2,4)
+
+M =  np.dot(A,W)+B
+
+S = (np.e**M)/(1 +  np.e**M)
+J = np.sum( Y*np.log(S) + (1-Y)*np.log(1-S) ) + 0.5*lamb*np.sum(W*W) + 0.5*lamb*np.sum(W1*W1)
+
+dS = (Y-S)
+dJ = np.dot(np.transpose(A), dS) + lamb*W
+
+dS1 = np.dot(dS, np.transpose(W))*A*(1-A) 
+dJ1 = np.dot(np.transpose(A1), dS1) + lamb*W1
+
+h = 0.001
+
+djdW = np.zeros((3,4))
+for i in range(3):
+    for j in range(4):
+        Wn = W.copy()
+        Wn[i][j] = W[i][j]+h
+        Mn = np.dot(A,Wn)+B
+        
+        Sn = (np.e**Mn)/(1 +  np.e**Mn)
+        Jn = np.sum( Y*np.log(Sn) + (1-Y)*np.log(1-Sn) ) + 0.5*lamb*np.sum(Wn*Wn) + 0.5*lamb*np.sum(W1*W1)
+
+        djdW[i][j] = (Jn-J)/h
+
+djdB = np.zeros((2,4))
+for i in range (2):
+    for j in range(4):
+        Bn = B.copy()
+        Bn[i][j] = B[i][j]+h
+        Mn = np.dot(A,W)+Bn
+        
+        Sn = (np.e**Mn)/(1 +  np.e**Mn)
+        Jn = np.sum( Y*np.log(Sn) + (1-Y)*np.log(1-Sn) ) + 0.5*lamb*np.sum(W*W) + 0.5*lamb*np.sum(W1*W1)
+
+        djdB[i][j] = (Jn-J)/h
+
+djdW1 = np.zeros((5,3))
+for i in range(5):
+    for j in range(3):
+        W1n = W1.copy()
+        W1n[i][j] = W1[i][j]+h
+
+        M1n = np.dot(A1,W1n)+B1
+
+        An = (np.e**M1n)/(1 +  np.e**M1n)
+        Mn =  np.dot(An,W)+B
+
+        Sn = (np.e**Mn)/(1 +  np.e**Mn)
+        Jn = np.sum( Y*np.log(Sn) + (1-Y)*np.log(1-Sn) ) + 0.5*lamb*np.sum(W*W) + 0.5*lamb*np.sum(W1n*W1n)
+
+        djdW1[i][j] = (Jn-J)/h
+
+djdB1 = np.zeros((2,3))
+for i in range(2):
+    for j in range(3):
+        B1n = B1.copy()
+        B1n[i][j] = B1[i][j]+h
+
+        M1n = np.dot(A1,W1)+B1n
+
+        An = (np.e**M1n)/(1 +  np.e**M1n)
+        Mn =  np.dot(An,W)+B
+
+        Sn = (np.e**Mn)/(1 +  np.e**Mn)
+        Jn = np.sum( Y*np.log(Sn) + (1-Y)*np.log(1-Sn) ) + 0.5*lamb*np.sum(W*W) + 0.5*lamb*np.sum(W1*W1)
+
+        djdB1[i][j] = (Jn-J)/h
+
+
+print(dJ)
+print(djdW)
+
+print(dJ1)
+print(djdW1)
+
+print(dS)
+print(djdB)
+
+print(dS1)
+print(djdB1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

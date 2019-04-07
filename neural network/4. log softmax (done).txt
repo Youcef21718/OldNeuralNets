@@ -1,0 +1,247 @@
+
+#use without coefficient
+
+
+
+import numpy as np
+import math
+
+def softmax(M):
+    M0 = np.exp(M)
+    M1 = np.dot(np.reshape(np.sum(M0, axis=1), (2,1)), np.array([[1,1,1,1]]))
+    M2 = M0/M1
+    return M2
+
+A = np.array([[ 0.06749876,  0.57280537,  0.81610796],
+       [ 0.51609013,  0.27607922,  0.46975043]])
+
+W = np.array([[ 0.48234606,  0.34398025,  0.12041662,  0.19607436],
+       [ 0.5942337 ,  0.09684389,  0.32244241,  0.63169907],
+       [ 0.66500136,  0.17018339,  0.53969114,  0.40571426]])
+
+M = np.dot(A,W)
+
+S = softmax(M)
+J = np.sum(np.log(S))
+
+dS = 1-S.shape[1]*S #which is equal to 1-4*S
+dJ = np.dot(np.transpose(A),dS)
+
+h = 0.001
+
+djdW = np.zeros((3,4))
+for i in range(3):
+    for j in range(4):
+        Wn = W.copy()
+        Wn[i][j] = W[i][j]+h
+        Mn = np.dot(A,Wn)
+        
+        Sn = softmax(Mn)
+        Jn = np.sum(np.log(Sn))
+
+        djdW[i][j] = (Jn-J)/h
+
+print(djdW)
+print(dJ)
+
+
+
+
+
+#use with coefficient
+
+
+
+import numpy as np
+import math
+
+Y = np.array([[0,0,1,0], [1,0,0,0]])
+#Y = np.random.rand(2,4)
+
+def softmax(M):
+    M0 = np.exp(M)
+    M1 = np.dot(np.reshape(np.sum(M0, axis=1), (2,1)), np.array([[1,1,1,1]]))
+    M2 = M0/M1
+    return M2
+
+A = np.array([[ 0.06749876,  0.57280537,  0.81610796],
+       [ 0.51609013,  0.27607922,  0.46975043]])
+
+W = np.array([[ 0.48234606,  0.34398025,  0.12041662,  0.19607436],
+       [ 0.5942337 ,  0.09684389,  0.32244241,  0.63169907],
+       [ 0.66500136,  0.17018339,  0.53969114,  0.40571426]])
+
+M = np.dot(A,W)
+
+S = softmax(M)
+J = np.sum(Y*np.log(S))
+
+rowsum = np.dot(np.reshape(np.sum(Y,axis=1), (2,1)), np.array([[1,1,1,1]]))
+dS = Y -  rowsum*S # which equals Y-S for rowsum=1
+dJ = np.dot(np.transpose(A),dS)
+
+h = 0.001
+
+djdW = np.zeros((3,4))
+for i in range(3):
+    for j in range(4):
+        Wn = W.copy()
+        Wn[i][j] = W[i][j]+h
+        Mn = np.dot(A,Wn)
+        
+        Sn = softmax(Mn)
+        Jn = np.sum(Y*np.log(Sn))
+
+        djdW[i][j] = (Jn-J)/h
+
+print(djdW)
+print(dJ)
+
+
+
+
+
+
+#use with coefficient, biases
+
+
+
+import numpy as np
+import math
+
+Y = np.array([[0,0,1,0], [1,0,0,0]])
+#Y = np.random.rand(2,4)
+
+def softmax(M):
+    M0 = np.exp(M)
+    M1 = np.dot(np.reshape(np.sum(M0, axis=1), (2,1)), np.array([[1,1,1,1]]))
+    M2 = M0/M1
+    return M2
+
+A = np.array([[ 0.06749876,  0.57280537,  0.81610796],
+       [ 0.51609013,  0.27607922,  0.46975043]])
+
+W = np.array([[ 0.48234606,  0.34398025,  0.12041662,  0.19607436],
+       [ 0.5942337 ,  0.09684389,  0.32244241,  0.63169907],
+       [ 0.66500136,  0.17018339,  0.53969114,  0.40571426]])
+
+B = np.array([[ 0.74301839,  0.23314429,  0.83373407,  0.92007906],
+       [ 0.30940004,  0.56377236,  0.80670867,  0.71568502]])
+
+M = np.dot(A,W)+B
+
+S = softmax(M)
+J = np.sum(Y*np.log(S))
+
+rowsum = np.dot(np.reshape(np.sum(Y,axis=1), (2,1)), np.array([[1,1,1,1]]))
+dS = Y -  rowsum*S # which equals Y-S for rowsum=1
+dJ = np.dot(np.transpose(A),dS)
+
+h = 0.001
+
+djdW = np.zeros((3,4))
+for i in range(3):
+    for j in range(4):
+        Wn = W.copy()
+        Wn[i][j] = W[i][j]+h
+        Mn = np.dot(A,Wn)+B
+        
+        Sn = softmax(Mn)
+        Jn = np.sum(Y*np.log(Sn))
+
+        djdW[i][j] = (Jn-J)/h
+
+print(djdW)
+print(dJ)
+
+djdB = np.zeros((2,4))
+for i in range (2):
+    for j in range(4):
+        Bn = B.copy()
+        Bn[i][j] = B[i][j]+h
+        Mn = np.dot(A,W)+Bn
+        
+        Sn = softmax(Mn)
+        Jn = np.sum(Y*np.log(Sn))
+
+        djdB[i][j] = (Jn-J)/h
+
+print(djdB)
+print(dS)
+
+
+
+
+
+
+
+#use without coefficient, biases
+
+
+
+import numpy as np
+import math
+
+def softmax(M):
+    M0 = np.exp(M)
+    M1 = np.dot(np.reshape(np.sum(M0, axis=1), (2,1)), np.array([[1,1,1,1]]))
+    M2 = M0/M1
+    return M2
+
+A = np.array([[ 0.06749876,  0.57280537,  0.81610796],
+       [ 0.51609013,  0.27607922,  0.46975043]])
+
+W = np.array([[ 0.48234606,  0.34398025,  0.12041662,  0.19607436],
+       [ 0.5942337 ,  0.09684389,  0.32244241,  0.63169907],
+       [ 0.66500136,  0.17018339,  0.53969114,  0.40571426]])
+
+B = np.array([[ 0.74301839,  0.23314429,  0.83373407,  0.92007906],
+       [ 0.30940004,  0.56377236,  0.80670867,  0.71568502]])
+
+M = np.dot(A,W)+B
+
+S = softmax(M)
+J = np.sum(np.log(S))
+
+dS = 1-S.shape[1]*S #which is equal to 1-4*S
+dJ = np.dot(np.transpose(A),dS)
+
+h = 0.001
+
+djdW = np.zeros((3,4))
+for i in range(3):
+    for j in range(4):
+        Wn = W.copy()
+        Wn[i][j] = W[i][j]+h
+        Mn = np.dot(A,Wn)+B
+        
+        Sn = softmax(Mn)
+        Jn = np.sum(np.log(Sn))
+
+        djdW[i][j] = (Jn-J)/h
+
+print(djdW)
+print(dJ)
+
+djdB = np.zeros((2,4))
+for i in range (2):
+    for j in range(4):
+        Bn = B.copy()
+        Bn[i][j] = B[i][j]+h
+        Mn = np.dot(A,W)+Bn
+        
+        Sn = softmax(Mn)
+        Jn = np.sum(np.log(Sn))
+
+        djdB[i][j] = (Jn-J)/h
+
+print(djdB)
+print(dS)
+
+
+
+
+
+
+
+

@@ -1,0 +1,157 @@
+import numpy as np
+
+def sig(m):
+    return (np.exp(m))/(1+np.exp(m))
+
+def dsig(m):
+    return sig(m)*(1-sig(m))
+
+def grad(m,epsilon):
+    dm = np.zeros(m.shape)
+    for i in range(m.shape[0]):
+        for j in range (m.shape[1]):
+            m[i][j] += epsilon
+            cost1 = NN(W12, W23, B12, B23, sL1, Y, gamma, beta, False)
+            m[i][j] -= epsilon
+
+            m[i][j] -= epsilon
+            cost2 = NN(W12, W23, B12, B23, sL1, Y, gamma, beta, False)
+            m[i][j] += epsilon
+
+            dm[i][j] = (cost1 - cost2)/(2*epsilon)
+    print(dm)
+
+def norm(M,u,s,e):
+    x = M.shape[0]
+    y = M.shape[1]
+
+    M2 = np.zeros((x,y))
+    for j in range(y):
+        for i in range(x):
+            M2[i][j] = (M[i][j] - u[j])/(np.sqrt(s[j] + e))
+    return M2
+
+def mean(M):
+    x = M.shape[0]
+    y = M.shape[1]
+
+    u = np.zeros(y)
+    for j in range(y):
+        sum = 0
+        for i in range(x):
+            sum = sum + M[i][j]
+        u[j] = sum/x
+    return u
+
+def std(M,u):
+    x = M.shape[0]
+    y = M.shape[1]
+
+    s = np.zeros(y)
+    for j in range(y):
+        sum = 0
+        for i in range(x):
+            sum = sum + (M[i][j] - u[j])**2
+        s[j] = sum/x
+    return s
+
+def Jac(M, u, s, e, coo):
+    batch = M.shape[0]
+    Jac = np.zeros((batch,batch))
+    for i in range(batch):
+        for j in range(batch):
+            sum = 0
+            for k in range(batch):
+                sum = sum + 2*(M[k][coo] - u[coo])*(one(i,k)-(1/batch))
+            Jac[i][j] = (one(i,j) - (1/batch))*((s[coo]+e)**-0.5) + (M[j][coo] - u[coo])*(-0.5*((s[coo]+e)**(-1.5))*((1/batch)*sum))
+    return Jac
+
+def JacMul(M,u,s,e, Mat):
+    output = np.zeros(Mat.shape)
+    for i in range(Mat.shape[1]):
+        Jac_i = Jac(M,u,s,e, i)
+        output[:,[i]] = Jac_i.dot(Mat[:,[i]])
+    return output
+
+def one(i,j):
+    if(i==j):
+        return 1
+    else:
+        return 0
+
+W12 = np.random.rand(3,4)
+W23 = np.random.rand(4,5)
+
+B12 = np.random.rand(2,4)
+B23 = np.random.rand(2,5)
+
+gamma = np.random.rand(2,5)
+beta = np.random.rand(2,5)
+
+#input
+sL1 = np.random.rand(2,3)
+
+#label
+Y = np.random.rand(2,5)
+
+def NN(W12, W23, B12, B23, sL1, Y, gamma, beta, show):
+
+    L2 = sL1.dot(W12)+B12
+    sL2 = sig(L2)
+
+    L3 = sL2.dot(W23)+B23
+    u = mean(L3)
+    s = std(L3,u)
+    e = 0.1
+
+    L3_1 = norm(L3,u,s,e)
+    L3_2 = L3_1*gamma + beta
+    sL3 = sig(L3_2)
+
+    cost = np.sum(0.5*(sL3-Y)*(sL3-Y))
+
+    if(show):
+
+        dbeta = (sL3-Y)*dsig(L3_2)
+        dgamma = dbeta*L3_1
+
+        dB23 = JacMul(L3,u,s,e, dbeta*gamma)
+        dB12 = dB23.dot(W23.T)*dsig(L2)
+
+        dW23 = (sL2.T).dot(dB23)
+        dW12 = (sL1.T).dot(dB12)
+
+        print(dbeta)
+        print()
+        print(dgamma)
+        print()
+                
+        print(dB23)
+        print()
+        print(dB12)
+        print()
+
+        print(dW23)
+        print()
+        print(dW12)
+        print()
+
+    return cost
+
+cost = NN(W12, W23, B12, B23, sL1, Y, gamma, beta, True)
+eps = 0.0001
+
+grad(beta,eps)
+print()
+grad(gamma,eps)
+print()
+
+grad(B23,eps)
+print()
+grad(B12,eps)
+print()
+
+grad(W23,eps)
+print()
+grad(W12,eps)
+print()
